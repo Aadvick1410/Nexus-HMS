@@ -1,0 +1,40 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-hms-dark text-hms-text font-sans antialiased;
+  }
+}
+
+@layer utilities {
+  .glass-panel {
+    @apply bg-hms-card bg-opacity-40 backdrop-blur-lg border border-white/10 shadow-xl;
+  }
+  
+  .input-field {
+    @apply w-full bg-hms-dark border border-white/20 rounded-lg px-4 py-3 text-hms-text placeholder-hms-muted focus:outline-none focus:border-hms-primary focus:ring-1 focus:ring-hms-primary transition-all duration-300;
+  }
+
+  .btn-primary {
+    @apply w-full bg-gradient-to-r from-hms-primary to-hms-accent text-white font-semibold rounded-lg px-4 py-3 hover:opacity-90 hover:shadow-lg hover:shadow-hms-primary/20 transition-all duration-300 transform active:scale-[0.98];
+  }
+}
+
+/* Custom scrollbar for premium feel */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0f172a; 
+}
+::-webkit-scrollbar-thumb {
+  background: #334155; 
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569; 
+}
