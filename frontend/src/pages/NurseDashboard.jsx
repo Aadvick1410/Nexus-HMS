@@ -143,7 +143,7 @@ const NurseDashboard = () => {
                         patients.map((patient) => (
                           <tr key={patient._id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
                             <td className="py-3 px-4">{patient.patientId?.userId?.name || patient.patientName || 'Unknown'}</td>
-                            <td className="py-3 px-4">{patient.roomNumber || 'N/A'}</td>
+                            <td className="py-3 px-4">{patient.roomId?.roomNumber || 'N/A'}</td>
                             <td className="py-3 px-4">{new Date(patient.admissionDate).toLocaleDateString()}</td>
                             <td className="py-3 px-4">
                               <span className="px-2 py-1 rounded-full text-xs bg-hms-primary/20 text-hms-primary border border-hms-primary/30">
@@ -180,7 +180,7 @@ const NurseDashboard = () => {
                   >
                     <option value="">-- Select --</option>
                     {patients.map(p => (
-                      <option key={p._id} value={p._id}>{p.patientId?.userId?.name || p.patientName || 'Unknown'} (Room {p.roomNumber || 'N/A'})</option>
+                      <option key={p._id} value={p._id}>{p.patientId?.userId?.name || p.patientName || 'Unknown'} (Room {p.roomId?.roomNumber || 'N/A'})</option>
                     ))}
                   </select>
                 </div>
@@ -227,7 +227,7 @@ const NurseDashboard = () => {
                   >
                     <option value="">-- Select --</option>
                     {patients.map(p => (
-                      <option key={p._id} value={p._id}>{p.patientId?.userId?.name || p.patientName || 'Unknown'} (Room {p.roomNumber || 'N/A'})</option>
+                      <option key={p._id} value={p._id}>{p.patientId?.userId?.name || p.patientName || 'Unknown'} (Room {p.roomId?.roomNumber || 'N/A'})</option>
                     ))}
                   </select>
                 </div>

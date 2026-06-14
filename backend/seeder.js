@@ -11,12 +11,10 @@ import Admission from './models/Admission.js';
 import EmergencyCase from './models/EmergencyCase.js';
 
 dotenv.config();
-
 connectDB();
 
 const importData = async () => {
   try {
-    // Clear existing data
     await User.deleteMany();
     await Patient.deleteMany();
     await Appointment.deleteMany();
@@ -28,7 +26,6 @@ const importData = async () => {
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash('Password123!', salt);
 
-    // 1. Create Base Users (Admin, Doctors, and ALL other roles)
     const staffUsers = await User.insertMany([
       { name: 'System Admin', email: 'admin@nexushms.com', password: passwordHash, role: 'Super Admin' },
       { name: 'Hospital Director', email: 'director@nexushms.com', password: passwordHash, role: 'Hospital Admin' },
@@ -48,8 +45,13 @@ const importData = async () => {
     const doctor2Id = staffUsers[3]._id;
     const doctor3Id = staffUsers[4]._id;
 
-    // 2. Create Demo Patients Users
-    const patientNames = ['Aadvick', 'Amay', 'Arpita', 'James', 'Gunjot'];
+    // 2. Create 20 Patients
+    const patientNames = [
+      'Aadvick', 'Amay', 'Arpita', 'James', 'Gunjot', 'Sophia', 'Liam', 'Olivia', 
+      'Noah', 'Emma', 'Oliver', 'Ava', 'Elijah', 'Charlotte', 'William', 'Amelia', 
+      'Lucas', 'Mia', 'Mason', 'Harper'
+    ];
+    
     const patientUsers = await User.insertMany(
       patientNames.map(name => ({
         name: name,
@@ -59,76 +61,26 @@ const importData = async () => {
       }))
     );
 
-    // 3. Create Intricate Patient Profiles
-    const patientDocs = await Patient.insertMany([
-      {
-        userId: patientUsers[0]._id, // Aadvick
-        patientId: 'PAT-1001',
-        dob: new Date('1990-05-14'),
-        gender: 'Male',
-        bloodGroup: 'O+',
-        phone: '+1-555-0101',
-        address: '123 Tech Lane, Silicon Valley',
-        emergencyContact: { name: 'Sarah (Wife)', relationship: 'Spouse', phone: '+1-555-0199' },
-        allergies: ['Penicillin', 'Peanuts'],
-        medicalHistory: [
-          { condition: 'Hypertension', diagnosedDate: new Date('2021-08-10'), notes: 'Managing with Lisinopril 10mg. Blood pressure stable at 125/80.' },
-          { condition: 'Mild Asthma', diagnosedDate: new Date('2015-03-22'), notes: 'Uses Albuterol inhaler occasionally during spring.' }
-        ]
-      },
-      {
-        userId: patientUsers[1]._id, // Amay
-        patientId: 'PAT-1002',
-        dob: new Date('1985-11-02'),
-        gender: 'Male',
-        bloodGroup: 'A+',
-        phone: '+1-555-0102',
-        address: '456 Startup Blvd, SF',
-        emergencyContact: { name: 'Ravi', relationship: 'Brother', phone: '+1-555-0299' },
-        allergies: ['Dust Mites'],
-        medicalHistory: [
-          { condition: 'Type 2 Diabetes', diagnosedDate: new Date('2019-11-05'), notes: 'HbA1c is 6.5%. Diet controlled. Takes Metformin 500mg.' }
-        ]
-      },
-      {
-        userId: patientUsers[2]._id, // Arpita
-        patientId: 'PAT-1003',
-        dob: new Date('1992-07-19'),
-        gender: 'Female',
-        bloodGroup: 'B+',
-        phone: '+1-555-0103',
-        address: '789 Innovation Drive, SJ',
-        emergencyContact: { name: 'Neha', relationship: 'Sister', phone: '+1-555-0399' },
-        allergies: ['Sulfa Drugs'],
-        medicalHistory: [
-          { condition: 'Migraines', diagnosedDate: new Date('2018-02-14'), notes: 'Occurs once a month. Prescribed Sumatriptan 50mg PRN.' }
-        ]
-      },
-      {
-        userId: patientUsers[3]._id, // James
-        patientId: 'PAT-1004',
-        dob: new Date('1978-04-30'),
-        gender: 'Male',
-        bloodGroup: 'AB-',
-        phone: '+1-555-0104',
-        address: '321 Enterprise Way, NY',
-        emergencyContact: { name: 'Mary', relationship: 'Wife', phone: '+1-555-0499' },
-        allergies: ['None'],
-        medicalHistory: []
-      },
-      {
-        userId: patientUsers[4]._id, // Gunjot
-        patientId: 'PAT-1005',
-        dob: new Date('1995-12-08'),
-        gender: 'Male',
-        bloodGroup: 'O-',
-        phone: '+1-555-0105',
-        address: '654 Cloud Ave, Seattle',
-        emergencyContact: { name: 'Simran', relationship: 'Sister', phone: '+1-555-0599' },
-        allergies: ['Latex'],
-        medicalHistory: []
-      }
-    ]);
+    // 3. Create Profiles for 20 patients
+    const patientProfiles = patientUsers.map((user, index) => {
+      const isEven = index % 2 === 0;
+      return {
+        userId: user._id,
+        patientId: `PAT-10${index.toString().padStart(2, '0')}`,
+        dob: new Date(1970 + index, (index % 12), (index % 28) + 1),
+        gender: isEven ? 'Male' : 'Female',
+        bloodGroup: ['O+', 'A+', 'B+', 'AB+', 'O-', 'A-', 'B-', 'AB-'][index % 8],
+        phone: `+1-555-${(1000 + index).toString()}`,
+        address: `${100 + index} Main St, City`,
+        emergencyContact: { name: `Relative ${index}`, relationship: 'Family', phone: `+1-555-${(2000 + index).toString()}` },
+        allergies: index % 3 === 0 ? ['Penicillin'] : (index % 4 === 0 ? ['Peanuts'] : ['None']),
+        medicalHistory: index % 5 === 0 ? [
+          { condition: 'Hypertension', diagnosedDate: new Date('2020-01-01'), notes: 'Routine checkups required.' }
+        ] : []
+      };
+    });
+    
+    const patientDocs = await Patient.insertMany(patientProfiles);
 
     // 4. Create Demo Rooms
     const rooms = await Room.insertMany([
@@ -169,7 +121,7 @@ const importData = async () => {
       }
     ]);
 
-    console.log('Data Imported successfully!');
+    console.log('Data Imported successfully with 20 patients!');
     console.log('--- DEMO CREDENTIALS ---');
     console.log('All passwords are: Password123!');
     console.log('Roles:');
@@ -186,9 +138,7 @@ const importData = async () => {
     console.log('  dr.williams@nexushms.com');
     console.log('  dr.torres@nexushms.com');
     console.log('  dr.sharma@nexushms.com');
-    patientNames.forEach(name => {
-      console.log(`Patient ${name}: ${name.toLowerCase()}@nexushms.com`);
-    });
+    console.log(`Created ${patientNames.length} patients. (e.g. ${patientNames[0].toLowerCase()}@nexushms.com)`);
     
     process.exit();
   } catch (error) {
