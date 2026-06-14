@@ -35,6 +35,9 @@ const importData = async () => {
       { name: 'Dr. Michael Torres', email: 'dr.torres@nexushms.com', password: passwordHash, role: 'Doctor', department: 'Pediatrics' },
       { name: 'Dr. Priya Sharma', email: 'dr.sharma@nexushms.com', password: passwordHash, role: 'Doctor', department: 'Orthopedics' },
       { name: 'Nurse Clara', email: 'nurse.clara@nexushms.com', password: passwordHash, role: 'Nurse' },
+      { name: 'Nurse Joy', email: 'nurse.joy@nexushms.com', password: passwordHash, role: 'Nurse' },
+      { name: 'Nurse Angela', email: 'nurse.angela@nexushms.com', password: passwordHash, role: 'Nurse' },
+      { name: 'Nurse Marcus', email: 'nurse.marcus@nexushms.com', password: passwordHash, role: 'Nurse' },
       { name: 'Recp. David', email: 'reception@nexushms.com', password: passwordHash, role: 'Receptionist' },
       { name: 'Lab Tech Sam', email: 'lab@nexushms.com', password: passwordHash, role: 'Lab Technician' },
       { name: 'Pharm. Lisa', email: 'pharmacy@nexushms.com', password: passwordHash, role: 'Pharmacist' },
@@ -127,7 +130,10 @@ const importData = async () => {
     console.log('Roles:');
     console.log('  Admin: admin@nexushms.com');
     console.log('  Director: director@nexushms.com');
-    console.log('  Nurse: nurse.clara@nexushms.com');
+    console.log('  Nurse Clara: nurse.clara@nexushms.com');
+    console.log('  Nurse Joy: nurse.joy@nexushms.com');
+    console.log('  Nurse Angela: nurse.angela@nexushms.com');
+    console.log('  Nurse Marcus: nurse.marcus@nexushms.com');
     console.log('  Receptionist: reception@nexushms.com');
     console.log('  Lab Tech: lab@nexushms.com');
     console.log('  Pharmacist: pharmacy@nexushms.com');
