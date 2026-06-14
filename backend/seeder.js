@@ -34,6 +34,11 @@ const importData = async () => {
       { name: 'Dr. Sarah Williams', email: 'dr.williams@nexushms.com', password: passwordHash, role: 'Doctor', department: 'Endocrinology' },
       { name: 'Dr. Michael Torres', email: 'dr.torres@nexushms.com', password: passwordHash, role: 'Doctor', department: 'Pediatrics' },
       { name: 'Dr. Priya Sharma', email: 'dr.sharma@nexushms.com', password: passwordHash, role: 'Doctor', department: 'Orthopedics' },
+      { name: 'Dr. Robert Lee', email: 'dr.lee@nexushms.com', password: passwordHash, role: 'Doctor', department: 'Oncology' },
+      { name: 'Dr. Olivia Martinez', email: 'dr.martinez@nexushms.com', password: passwordHash, role: 'Doctor', department: 'Dermatology' },
+      { name: 'Dr. David Kim', email: 'dr.kim@nexushms.com', password: passwordHash, role: 'Doctor', department: 'Psychiatry' },
+      { name: 'Dr. Amanda Clark', email: 'dr.clark@nexushms.com', password: passwordHash, role: 'Doctor', department: 'Gastroenterology' },
+      { name: 'Dr. Richard Davis', email: 'dr.davis@nexushms.com', password: passwordHash, role: 'Doctor', department: 'Urology' },
       { name: 'Nurse Clara', email: 'nurse.clara@nexushms.com', password: passwordHash, role: 'Nurse' },
       { name: 'Nurse Joy', email: 'nurse.joy@nexushms.com', password: passwordHash, role: 'Nurse' },
       { name: 'Nurse Angela', email: 'nurse.angela@nexushms.com', password: passwordHash, role: 'Nurse' },
@@ -47,10 +52,10 @@ const importData = async () => {
     const doctor1Id = staffUsers[2]._id;
     const doctor2Id = staffUsers[3]._id;
     const doctor3Id = staffUsers[4]._id;
-    const nurse1Id = staffUsers[7]._id;
-    const nurse2Id = staffUsers[8]._id;
-    const nurse3Id = staffUsers[9]._id;
-    const nurse4Id = staffUsers[10]._id;
+    const nurse1Id = staffUsers[12]._id;
+    const nurse2Id = staffUsers[13]._id;
+    const nurse3Id = staffUsers[14]._id;
+    const nurse4Id = staffUsers[15]._id;
 
     // 2. Create 20 Patients
     const patientNames = [
@@ -146,11 +151,16 @@ const importData = async () => {
     console.log('  Pharmacist: pharmacy@nexushms.com');
     console.log('  Billing: billing@nexushms.com');
     console.log('Doctors:');
-    console.log('  dr.chen@nexushms.com');
-    console.log('  dr.patel@nexushms.com');
-    console.log('  dr.williams@nexushms.com');
-    console.log('  dr.torres@nexushms.com');
-    console.log('  dr.sharma@nexushms.com');
+    console.log('  dr.chen@nexushms.com (Cardiology)');
+    console.log('  dr.patel@nexushms.com (Neurology)');
+    console.log('  dr.williams@nexushms.com (Endocrinology)');
+    console.log('  dr.torres@nexushms.com (Pediatrics)');
+    console.log('  dr.sharma@nexushms.com (Orthopedics)');
+    console.log('  dr.lee@nexushms.com (Oncology)');
+    console.log('  dr.martinez@nexushms.com (Dermatology)');
+    console.log('  dr.kim@nexushms.com (Psychiatry)');
+    console.log('  dr.clark@nexushms.com (Gastroenterology)');
+    console.log('  dr.davis@nexushms.com (Urology)');
     console.log(`Created ${patientNames.length} patients. (e.g. ${patientNames[0].toLowerCase()}@nexushms.com)`);
     
     process.exit();
