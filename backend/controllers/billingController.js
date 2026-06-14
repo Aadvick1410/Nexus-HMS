@@ -56,4 +56,44 @@ const processPayment = asyncHandler(async (req, res) => {
   }
 });
 
-export { generateInvoice, getPatientInvoices, processPayment };
+// @desc    Get all invoices
+// @route   GET /api/billing/all
+// @access  Private (Billing Executive, Super Admin)
+const getAllInvoices = asyncHandler(async (req, res) => {
+  const invoices = await Invoice.find({})
+    .populate('generatedBy', 'name')
+    .populate({
+      path: 'patientId',
+      populate: { path: 'userId', select: 'name' }
+    })
+    .sort({ createdAt: -1 });
+  res.json(invoices);
+});
+
+// @desc    Update invoice (Admin Edit)
+// @route   PUT /api/billing/:id
+// @access  Private (Billing Executive, Super Admin)
+const updateInvoiceAdmin = asyncHandler(async (req, res) => {
+  const invoice = await Invoice.findById(req.params.id);
+
+  if (invoice) {
+    invoice.totalAmount = req.body.totalAmount ?? invoice.totalAmount;
+    invoice.paymentStatus = req.body.paymentStatus || invoice.paymentStatus;
+    
+    const updatedInvoice = await invoice.save();
+    
+    const populatedInvoice = await Invoice.findById(updatedInvoice._id)
+      .populate('generatedBy', 'name')
+      .populate({
+        path: 'patientId',
+        populate: { path: 'userId', select: 'name' }
+      });
+      
+    res.json(populatedInvoice);
+  } else {
+    res.status(404);
+    throw new Error('Invoice not found');
+  }
+});
+
+export { generateInvoice, getPatientInvoices, processPayment, getAllInvoices, updateInvoiceAdmin };

@@ -8,17 +8,30 @@ export default {
     extend: {
       colors: {
         hms: {
-          dark: '#0f172a',
-          card: '#1e293b',
-          primary: '#3b82f6',
-          secondary: '#10b981',
-          accent: '#8b5cf6',
-          text: '#f8fafc',
-          muted: '#94a3b8'
+          dark: '#0a1628',
+          card: '#111f38',
+          primary: '#0891b2',    // Medical Teal/Cyan
+          secondary: '#059669',  // Surgical Green
+          accent: '#0284c7',     // Clinical Blue
+          danger: '#dc2626',     // Emergency Red
+          warning: '#d97706',    // Alert Amber
+          text: '#f1f5f9',
+          muted: '#8ba3c4',
+          surface: '#152240',
         }
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+      },
+      animation: {
+        'fade-in': 'fadeIn 0.3s ease-out',
+        'slide-up': 'slideUp 0.4s ease-out',
+        'pulse-soft': 'pulseSoft 3s ease-in-out infinite',
+      },
+      keyframes: {
+        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+        slideUp: { '0%': { opacity: '0', transform: 'translateY(12px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+        pulseSoft: { '0%, 100%': { opacity: '0.15' }, '50%': { opacity: '0.25' } },
       }
     },
   },

@@ -41,6 +41,8 @@ const patientSchema = mongoose.Schema(
     insuranceInfo: {
       provider: { type: String },
       policyNumber: { type: String },
+      claimNumber: { type: String },
+      expiryDate: { type: Date },
     },
     allergies: [
       {

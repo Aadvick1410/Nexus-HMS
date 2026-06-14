@@ -77,4 +77,59 @@ const getPatientById = asyncHandler(async (req, res) => {
   }
 });
 
-export { createPatientProfile, getPatientProfile, getPatientById };
+// @desc    Get all patients
+// @route   GET /api/patients
+// @access  Private (Staff roles)
+const getAllPatients = asyncHandler(async (req, res) => {
+  const patients = await Patient.find({}).populate('userId', 'name email');
+  res.json(patients);
+});
+
+// @desc    Add to medical history
+// @route   PUT /api/patients/profile/history
+// @access  Private (Patient)
+const addMedicalHistory = asyncHandler(async (req, res) => {
+  const { condition, notes } = req.body;
+  const patient = await Patient.findOne({ userId: req.user._id });
+
+  if (patient) {
+    patient.medicalHistory.push({
+      condition: condition || 'Uploaded Document',
+      diagnosedDate: new Date(),
+      notes: notes || 'File attached to this record.'
+    });
+    const updatedPatient = await patient.save();
+    res.json(updatedPatient);
+  } else {
+    res.status(404);
+    throw new Error('Patient profile not found');
+  }
+});
+
+// @desc    Update patient details (Admin Edit)
+// @route   PUT /api/patients/admin/:id
+// @access  Private (Staff)
+const updatePatientAdmin = asyncHandler(async (req, res) => {
+  const patient = await Patient.findById(req.params.id).populate('userId');
+
+  if (patient) {
+    patient.phone = req.body.phone || patient.phone;
+    patient.bloodGroup = req.body.bloodGroup || patient.bloodGroup;
+    
+    if (req.body.name || req.body.email) {
+      patient.userId.name = req.body.name || patient.userId.name;
+      patient.userId.email = req.body.email || patient.userId.email;
+      await patient.userId.save();
+    }
+
+    const updatedPatient = await patient.save();
+    // Return populated for immediate UI refresh
+    const populatedPatient = await Patient.findById(updatedPatient._id).populate('userId', 'name email');
+    res.json(populatedPatient);
+  } else {
+    res.status(404);
+    throw new Error('Patient not found');
+  }
+});
+
+export { createPatientProfile, getPatientProfile, getPatientById, getAllPatients, addMedicalHistory, updatePatientAdmin };

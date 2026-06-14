@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import path from 'path';
 import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import patientRoutes from './routes/patientRoutes.js';
@@ -13,6 +14,14 @@ import pharmacyRoutes from './routes/pharmacyRoutes.js';
 import billingRoutes from './routes/billingRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import quirkyRoutes from './routes/quirkyRoutes.js';
+import uploadRoutes from './routes/uploadRoutes.js';
+import doctorRoutes from './routes/doctorRoutes.js';
+import roomRoutes from './routes/roomRoutes.js';
+import admissionRoutes from './routes/admissionRoutes.js';
+import emergencyRoutes from './routes/emergencyRoutes.js';
+import aiRoutes from './routes/aiRoutes.js';
+import analyticsRoutes from './routes/analyticsRoutes.js';
+import { logAction } from './middleware/auditMiddleware.js';
 
 dotenv.config();
 
@@ -30,6 +39,16 @@ const io = new Server(httpServer, {
 app.use(cors());
 app.use(express.json());
 
+// Audit logging middleware for mutating requests
+app.use('/api', (req, res, next) => {
+  if (req.method === 'POST' || req.method === 'PUT' || req.method === 'DELETE') {
+    // Extract module name from path (e.g. /patients -> Patient)
+    const module = req.path.split('/')[1] || 'General';
+    return logAction(module.charAt(0).toUpperCase() + module.slice(1))(req, res, next);
+  }
+  next();
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/patients', patientRoutes);
@@ -40,6 +59,16 @@ app.use('/api/pharmacy', pharmacyRoutes);
 app.use('/api/billing', billingRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/quirky', quirkyRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/doctors', doctorRoutes);
+app.use('/api/rooms', roomRoutes);
+app.use('/api/admissions', admissionRoutes);
+app.use('/api/emergency', emergencyRoutes);
+app.use('/api/ai', aiRoutes);
+app.use('/api/analytics', analyticsRoutes);
+
+const __dirname = path.resolve();
+app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 
 // Socket.io for Real-time Notifications
 io.on('connection', (socket) => {

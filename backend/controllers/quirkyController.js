@@ -71,7 +71,8 @@ const generateDischargeHaiku = asyncHandler(async (req, res) => {
 
   try {
     // Calling our Python AI Microservice
-    const response = await axios.post('http://localhost:8000/api/ai/generate-haiku', {
+    const aiServiceUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+    const response = await axios.post(`${aiServiceUrl}/api/ai/generate-haiku`, {
       patient_name: patientName,
       condition: condition
     });

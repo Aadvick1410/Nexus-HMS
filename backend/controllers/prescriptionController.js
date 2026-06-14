@@ -53,4 +53,19 @@ const updatePrescriptionStatus = asyncHandler(async (req, res) => {
   }
 });
 
-export { createPrescription, getPatientPrescriptions, updatePrescriptionStatus };
+// @desc    Get all prescriptions
+// @route   GET /api/prescriptions/all
+// @access  Private (Pharmacist, Doctor, Super Admin)
+const getAllPrescriptions = asyncHandler(async (req, res) => {
+  const prescriptions = await Prescription.find({})
+    .populate({
+      path: 'patientId',
+      populate: { path: 'userId', select: 'name email' }
+    })
+    .populate('doctorId', 'name')
+    .sort({ createdAt: -1 });
+
+  res.json(prescriptions);
+});
+
+export { createPrescription, getPatientPrescriptions, updatePrescriptionStatus, getAllPrescriptions };

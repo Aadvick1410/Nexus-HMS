@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -8,33 +8,85 @@
   body {
     @apply bg-hms-dark text-hms-text font-sans antialiased;
   }
+  
+  /* Force dark date picker on Chromium browsers */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.8);
+    cursor: pointer;
+  }
+  select option {
+    background-color: #111f38;
+    color: #f1f5f9;
+  }
 }
 
 @layer utilities {
   .glass-panel {
-    @apply bg-hms-card bg-opacity-40 backdrop-blur-lg border border-white/10 shadow-xl;
+    background-color: rgba(17, 31, 56, 0.6);
+    @apply backdrop-blur-xl border border-white/10 shadow-2xl;
+  }
+  .glass-panel-solid {
+    @apply bg-hms-surface border border-white/10 shadow-xl;
   }
   
   .input-field {
-    @apply w-full bg-hms-dark border border-white/20 rounded-lg px-4 py-3 text-hms-text placeholder-hms-muted focus:outline-none focus:border-hms-primary focus:ring-1 focus:ring-hms-primary transition-all duration-300;
+    @apply w-full bg-hms-dark border border-hms-muted/25 rounded-lg px-4 py-3 text-hms-text focus:outline-none focus:border-hms-primary transition-all duration-200;
+    background-color: rgba(10, 22, 40, 0.8);
+  }
+  .input-field::placeholder {
+    color: rgba(139, 163, 196, 0.6);
   }
 
   .btn-primary {
-    @apply w-full bg-gradient-to-r from-hms-primary to-hms-accent text-white font-semibold rounded-lg px-4 py-3 hover:opacity-90 hover:shadow-lg hover:shadow-hms-primary/20 transition-all duration-300 transform active:scale-[0.98];
+    @apply w-full bg-gradient-to-r from-hms-primary to-hms-accent text-white font-semibold rounded-lg px-4 py-3 hover:opacity-90 hover:shadow-lg transition-all duration-200;
+  }
+  .btn-primary:active {
+    transform: scale(0.98);
+  }
+  
+  .btn-medical {
+    @apply bg-hms-primary/15 text-hms-primary border border-hms-primary/30 font-medium rounded-lg px-4 py-2.5 transition-all duration-200;
+  }
+  .btn-medical:hover {
+    @apply bg-hms-primary/25;
+  }
+
+  .card-medical {
+    @apply bg-hms-surface backdrop-blur-md border border-white/10 rounded-xl shadow-lg;
+    background-color: rgba(21, 34, 64, 0.8);
   }
 }
 
-/* Custom scrollbar for premium feel */
-::-webkit-scrollbar {
-  width: 8px;
+/* ── Medical Cross Accent ── */
+.medical-cross::before {
+  content: '✚';
+  position: absolute;
+  right: -0.75rem;
+  top: -0.75rem;
+  font-size: 3.75rem;
+  color: rgba(8, 145, 178, 0.2);
+  pointer-events: none;
+  user-select: none;
 }
-::-webkit-scrollbar-track {
-  background: #0f172a; 
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0a1628; }
+::-webkit-scrollbar-thumb { background: #1e3a5f; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #2d5280; }
+
+/* ── Pulse Dot for live status ── */
+.pulse-dot {
+  position: relative;
 }
-::-webkit-scrollbar-thumb {
-  background: #334155; 
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #475569; 
+.pulse-dot::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 0.625rem;
+  height: 0.625rem;
+  background-color: #34d399;
+  border-radius: 9999px;
+  animation: pulse 2s ease-in-out infinite;
 }

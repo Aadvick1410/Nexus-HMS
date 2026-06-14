@@ -48,6 +48,27 @@ const updateLabTest = asyncHandler(async (req, res) => {
 
     if (status === 'Completed' && !labTest.completedAt) {
       labTest.completedAt = Date.now();
+
+      const io = req.app.get('io');
+      if (io) {
+        const populatedLabTest = await labTest.populate('patientId', 'userId');
+        const patientUserId = populatedLabTest.patientId?.userId;
+        const doctorId = populatedLabTest.orderedBy;
+
+        if (doctorId) {
+          io.to(doctorId.toString()).emit('new_notification', {
+            title: 'Lab Result Completed',
+            message: `Lab result for ${populatedLabTest.testType} is ready.`
+          });
+        }
+
+        if (patientUserId) {
+          io.to(patientUserId.toString()).emit('new_notification', {
+            title: 'Lab Result Completed',
+            message: `Your lab result for ${populatedLabTest.testType} is ready.`
+          });
+        }
+      }
     }
 
     const updatedLabTest = await labTest.save();
