@@ -35,10 +35,10 @@ const admitPatient = asyncHandler(async (req, res) => {
     }
     await room.save();
     
-    // Populate before sending response
     const populatedAdmission = await Admission.findById(admission._id)
       .populate('patientId', 'patientId dob userId')
-      .populate('roomId', 'roomNumber ward');
+      .populate('roomId', 'roomNumber ward')
+      .populate('assignedNurse', 'name email');
 
     res.status(201).json(populatedAdmission);
   } else {
@@ -57,7 +57,8 @@ const getAdmissions = asyncHandler(async (req, res) => {
       populate: { path: 'userId', select: 'name email' }
     })
     .populate('roomId', 'roomNumber ward')
-    .populate('admittedBy', 'name');
+    .populate('admittedBy', 'name')
+    .populate('assignedNurse', 'name');
     
   res.json(admissions);
 });

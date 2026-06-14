@@ -17,6 +17,10 @@ const admissionSchema = mongoose.Schema(
       required: true,
       ref: 'User', // Doctor or Admin
     },
+    assignedNurse: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User', // Nurse
+    },
     admissionDate: {
       type: Date,
       required: true,

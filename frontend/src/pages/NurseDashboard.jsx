@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Activity, ClipboardPlus, PlusCircle } from 'lucide-react';
 import api from '../api/axios';
+import { useAuth } from '../context/AuthContext';
 
 const NurseDashboard = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('assignedPatients');
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -23,7 +25,8 @@ const NurseDashboard = () => {
     setLoading(true);
     try {
       const response = await api.get('/api/admissions');
-      setPatients(response.data);
+      const assigned = response.data.filter(p => p.assignedNurse?._id === user._id);
+      setPatients(assigned);
     } catch (error) {
       console.error('Error fetching patients:', error);
     } finally {

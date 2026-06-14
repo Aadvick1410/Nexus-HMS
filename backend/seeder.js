@@ -47,6 +47,10 @@ const importData = async () => {
     const doctor1Id = staffUsers[2]._id;
     const doctor2Id = staffUsers[3]._id;
     const doctor3Id = staffUsers[4]._id;
+    const nurse1Id = staffUsers[7]._id;
+    const nurse2Id = staffUsers[8]._id;
+    const nurse3Id = staffUsers[9]._id;
+    const nurse4Id = staffUsers[10]._id;
 
     // 2. Create 20 Patients
     const patientNames = [
@@ -94,8 +98,11 @@ const importData = async () => {
 
     // 5. Create Demo Admissions
     await Admission.insertMany([
-      { patientId: patientDocs[0]._id, roomId: rooms[0]._id, admittedBy: doctor1Id, status: 'Admitted', diagnosis: 'Observation for high BP' },
-      { patientId: patientDocs[1]._id, roomId: rooms[1]._id, admittedBy: doctor3Id, status: 'Under Treatment', diagnosis: 'Severe Hypoglycemia', treatmentPlan: 'IV Dextrose' }
+      { patientId: patientDocs[0]._id, roomId: rooms[0]._id, admittedBy: doctor1Id, assignedNurse: nurse1Id, status: 'Admitted', diagnosis: 'Observation for high BP' },
+      { patientId: patientDocs[1]._id, roomId: rooms[1]._id, admittedBy: doctor3Id, assignedNurse: nurse2Id, status: 'Under Treatment', diagnosis: 'Severe Hypoglycemia', treatmentPlan: 'IV Dextrose' },
+      { patientId: patientDocs[2]._id, roomId: rooms[0]._id, admittedBy: doctor2Id, assignedNurse: nurse3Id, status: 'Admitted', diagnosis: 'Migraine Observation' },
+      { patientId: patientDocs[3]._id, roomId: rooms[2]._id, admittedBy: doctor1Id, assignedNurse: nurse4Id, status: 'Under Treatment', diagnosis: 'Post-Surgery Recovery', treatmentPlan: 'Pain management' },
+      { patientId: patientDocs[4]._id, roomId: rooms[0]._id, admittedBy: doctor3Id, assignedNurse: nurse1Id, status: 'Admitted', diagnosis: 'Allergic Reaction' }
     ]);
 
     // 6. Create Demo Emergency Cases
