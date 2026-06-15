@@ -5,6 +5,14 @@ import api from '../api/axios';
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const AdminDashboard = () => {
+
+    const navigate = useNavigate();
+    const handleLogout = () => {
+        localStorage.removeItem('hms_token');
+        localStorage.removeItem('hms_user_name');
+        navigate('/login');
+    };
+
   const [activeTab, setActiveTab] = useState('dashboard');
   const [aiInsights, setAiInsights] = useState(null);
   const [loadingInsights, setLoadingInsights] = useState(false);
@@ -15,9 +23,10 @@ const AdminDashboard = () => {
   const [rooms, setRooms] = useState([]);
   const [emergencyCases, setEmergencyCases] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [invoiceFilter, setInvoiceFilter] = useState('All');
   const [currentTime, setCurrentTime] = useState(new Date());
   const [analyticsData, setAnalyticsData] = useState(null);
-  const navigate = useNavigate();
+
 
   const [editPatient, setEditPatient] = useState(null);
   const [editAppt, setEditAppt] = useState(null);
@@ -93,7 +102,7 @@ const AdminDashboard = () => {
   return (
     <div 
       className="min-h-screen text-white relative bg-cover bg-center bg-fixed"
-      style={{ backgroundImage: "url('/dashboard-bg.png')" }}
+      style={{ backgroundImage: "url('/admin-bg-real.png')" }}
     >
       {/* Dark overlay */}
       <div className="fixed inset-0 bg-gradient-to-br from-hms-dark/95 via-hms-dark/90 to-hms-surface/95 backdrop-blur-sm"></div>
@@ -138,10 +147,10 @@ const AdminDashboard = () => {
 
           {/* Stats Row */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <StatCard title="Registered Patients" value={patients.length} subtitle="Active records" icon={<Users size={22} />} color="text-hms-primary" gradient="from-hms-primary/20 to-hms-primary/5" border="border-hms-primary/25" />
-            <StatCard title="Appointments" value={appointments.length} subtitle={`${confirmedAppts} confirmed · ${completedAppts} completed`} icon={<Calendar size={22} />} color="text-blue-400" gradient="from-blue-500/20 to-blue-500/5" border="border-blue-500/25" />
-            <StatCard title="Revenue Collected" value={`$${paidRevenue.toLocaleString()}`} subtitle="Total payments received" icon={<TrendingUp size={22} />} color="text-emerald-400" gradient="from-emerald-500/20 to-emerald-500/5" border="border-emerald-500/25" />
-            <StatCard title="Pending Dues" value={`$${pendingRevenue.toLocaleString()}`} subtitle="Awaiting settlement" icon={<AlertTriangle size={22} />} color="text-amber-400" gradient="from-amber-500/20 to-amber-500/5" border="border-amber-500/25" />
+            <StatCard title="Registered Patients" value={patients.length} subtitle="Active records" icon={<Users size={22} />} color="text-hms-primary" gradient="from-hms-primary/20 to-hms-primary/5" border="border-hms-primary/25" onClick={() => setActiveTab('patients')} />
+            <StatCard title="Appointments" value={appointments.length} subtitle={`${confirmedAppts} confirmed · ${completedAppts} completed`} icon={<Calendar size={22} />} color="text-blue-400" gradient="from-blue-500/20 to-blue-500/5" border="border-blue-500/25" onClick={() => setActiveTab('appointments')} />
+            <StatCard title="Revenue Collected" value={`$${paidRevenue.toLocaleString()}`} subtitle="Total payments received" icon={<TrendingUp size={22} />} color="text-emerald-400" gradient="from-emerald-500/20 to-emerald-500/5" border="border-emerald-500/25" onClick={() => { setActiveTab('invoices'); setInvoiceFilter('Paid'); }} />
+            <StatCard title="Pending Dues" value={`$${pendingRevenue.toLocaleString()}`} subtitle="Awaiting settlement" icon={<AlertTriangle size={22} />} color="text-amber-400" gradient="from-amber-500/20 to-amber-500/5" border="border-amber-500/25" onClick={() => { setActiveTab('invoices'); setInvoiceFilter('Pending'); }} />
           </div>
 
           {/* Main Content */}
@@ -165,11 +174,11 @@ const AdminDashboard = () => {
                 <div className="px-3 space-y-2">
                   <div className="flex items-center gap-2 text-xs text-white/50">
                     <Building2 size={12} className="text-hms-primary" />
-                    <span>15 Departments</span>
+                    <span>{analyticsData?.departmentData?.length || 0} Departments</span>
                   </div>
                   <div className="flex items-center gap-2 text-xs text-white/50">
                     <Stethoscope size={12} className="text-emerald-400" />
-                    <span>8 Active Physicians</span>
+                    <span>{doctors.length} Active Physicians</span>
                   </div>
                   <div className="flex items-center gap-2 text-xs text-white/50">
                     <Shield size={12} className="text-amber-400" />
@@ -399,12 +408,27 @@ const AdminDashboard = () => {
                         <th className="py-3 px-3">Invoice #</th>
                         <th className="py-3 px-3">Patient</th>
                         <th className="py-3 px-3">Amount</th>
-                        <th className="py-3 px-3">Status</th>
+                        <th className="py-3 px-3">
+                          <select 
+                            className="bg-transparent border-none text-[10px] text-white/40 uppercase tracking-wider outline-none cursor-pointer hover:text-white"
+                            value={invoiceFilter}
+                            onChange={(e) => setInvoiceFilter(e.target.value)}
+                          >
+                            <option value="All">Status (All)</option>
+                            <option value="Paid">Paid</option>
+                            <option value="Pending">Pending</option>
+                          </select>
+                        </th>
                         <th className="py-3 px-3">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {invoices.map(i => (
+                      {invoices.filter(i => {
+                        if (invoiceFilter === 'All') return true;
+                        if (invoiceFilter === 'Paid') return i.paymentStatus === 'Paid';
+                        if (invoiceFilter === 'Pending') return i.paymentStatus !== 'Paid';
+                        return true;
+                      }).map(i => (
                         <tr key={i._id} className="border-b border-white/5 hover:bg-white/5 transition-colors group">
                           <td className="py-3.5 px-3 font-mono text-xs text-white/50">INV-{i._id.toString().substring(18).toUpperCase()}</td>
                           <td className="py-3.5 px-3 text-sm font-medium text-white">{i.patientId?.userId?.name || 'Unknown'}</td>
@@ -844,8 +868,8 @@ const ModalField = ({ label, value, onChange, type = 'text' }) => (
   </div>
 );
 
-const StatCard = ({ title, value, subtitle, icon, color, gradient, border }) => (
-  <div className={`p-5 rounded-2xl bg-gradient-to-br ${gradient} border ${border} backdrop-blur-md relative overflow-hidden group hover:scale-[1.02] transition-transform`}>
+const StatCard = ({ title, value, subtitle, icon, color, gradient, border, onClick }) => (
+  <div onClick={onClick} className={`p-5 rounded-2xl bg-gradient-to-br ${gradient} border ${border} backdrop-blur-md relative overflow-hidden group hover:scale-[1.02] transition-transform ${onClick ? 'cursor-pointer' : ''}`}>
     <div className={`absolute -right-3 -top-3 ${color} opacity-10 group-hover:opacity-20 transition-opacity`}>
       {React.cloneElement(icon, { size: 60 })}
     </div>

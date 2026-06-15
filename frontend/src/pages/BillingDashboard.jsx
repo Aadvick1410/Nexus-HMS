@@ -13,7 +13,7 @@ const BillingDashboard = () => {
 
   // Invoice form state
   const [selectedPatient, setSelectedPatient] = useState('');
-  const [lineItems, setLineItems] = useState([{ description: '', amount: '' }]);
+  const [lineItems, setLineItems] = useState([{ description: '', amount: '', category: 'Consultation' }]);
   const [toastMessage, setToastMessage] = useState('');
   
   const navigate = useNavigate();
@@ -35,7 +35,7 @@ const BillingDashboard = () => {
   const fetchInvoices = async () => {
     try {
       setLoading(true);
-      const res = await api.get('/billing/all');
+      const res = await api.get('/api/billing/all');
       const data = res.data.data || res.data;
       setInvoices(Array.isArray(data) ? data : []);
       setError('');
@@ -50,7 +50,7 @@ const BillingDashboard = () => {
   const handleProcessPayment = async (id) => {
     try {
       setProcessingId(id);
-      await api.put(`/billing/${id}/pay`, { paymentMethod: 'Card' });
+      await api.put(`/api/billing/${id}/pay`, { paymentMethod: 'Card' });
       await fetchInvoices();
     } catch (err) {
       console.error(err);
@@ -61,7 +61,7 @@ const BillingDashboard = () => {
   };
 
   const handleAddLineItem = () => {
-    setLineItems([...lineItems, { description: '', amount: '' }]);
+    setLineItems([...lineItems, { description: '', amount: '', category: 'Consultation' }]);
   };
 
   const handleLineItemChange = (index, field, value) => {
@@ -85,7 +85,8 @@ const BillingDashboard = () => {
     try {
       const formattedItems = lineItems.map(item => ({
         description: item.description,
-        amount: Number(item.amount)
+        amount: Number(item.amount),
+        category: item.category || 'Consultation'
       }));
       await api.post('/api/billing', {
         patientId: selectedPatient,
@@ -93,7 +94,7 @@ const BillingDashboard = () => {
       });
       setToastMessage('Invoice generated successfully!');
       setSelectedPatient('');
-      setLineItems([{ description: '', amount: '' }]);
+      setLineItems([{ description: '', amount: '', category: 'Consultation' }]);
       fetchInvoices();
       setTimeout(() => setToastMessage(''), 3000);
     } catch (error) {
@@ -108,11 +109,11 @@ const BillingDashboard = () => {
     navigate('/login');
   };
 
-  const paidInvoices = invoices.filter(inv => inv.status === 'Paid');
-  const unpaidInvoices = invoices.filter(inv => inv.status !== 'Paid');
+  const paidInvoices = invoices.filter(inv => inv.paymentStatus === 'Paid');
+  const unpaidInvoices = invoices.filter(inv => inv.paymentStatus !== 'Paid');
 
-  const totalRevenue = paidInvoices.reduce((sum, inv) => sum + (inv.amount || 0), 0);
-  const pendingRevenue = unpaidInvoices.reduce((sum, inv) => sum + (inv.amount || 0), 0);
+  const totalRevenue = paidInvoices.reduce((sum, inv) => sum + (inv.totalAmount || 0), 0);
+  const pendingRevenue = unpaidInvoices.reduce((sum, inv) => sum + (inv.totalAmount || 0), 0);
 
   return (
     <div className="min-h-screen bg-hms-dark text-hms-text font-sans relative overflow-hidden flex">
@@ -254,13 +255,13 @@ const BillingDashboard = () => {
                               #{inv._id?.substring(0, 8).toUpperCase()}
                             </td>
                             <td className="p-4 text-gray-300">
-                              {inv.patientId?.name || inv.patientName || 'Unknown'}
+                              {inv.patientId?.userId?.name || 'Unknown Patient'}
                             </td>
                             <td className="p-4 text-gray-400 text-sm">
                               {new Date(inv.createdAt || inv.date).toLocaleDateString()}
                             </td>
                             <td className="p-4 text-white font-bold">
-                              ${inv.amount?.toFixed(2)}
+                              ${inv.totalAmount?.toFixed(2)}
                             </td>
                             <td className="p-4 text-right">
                               <button
@@ -314,10 +315,10 @@ const BillingDashboard = () => {
                               #{inv._id?.substring(0, 8).toUpperCase()}
                             </td>
                             <td className="p-4 text-gray-300">
-                              {inv.patientId?.name || inv.patientName || 'Unknown'}
+                              {inv.patientId?.userId?.name || 'Unknown Patient'}
                             </td>
                             <td className="p-4 text-white">
-                              ${inv.amount?.toFixed(2)}
+                              ${inv.totalAmount?.toFixed(2)}
                             </td>
                             <td className="p-4">
                               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-500/20 text-green-400 border border-green-500/30">
@@ -358,7 +359,7 @@ const BillingDashboard = () => {
                     <option value="">-- Choose Patient --</option>
                     {Array.isArray(patients) && patients.map(p => (
                       <option key={p._id || p.id} value={p._id || p.id}>
-                        {p.name}
+                        {p.userId?.name || p.name || 'Unknown Patient'} ({p.patientId || 'No ID'})
                       </option>
                     ))}
                   </select>
@@ -396,6 +397,17 @@ const BillingDashboard = () => {
                             className="w-full bg-black/50 border border-white/10 rounded-xl p-3 pl-8 text-white focus:outline-none focus:border-hms-primary transition-colors"
                           />
                         </div>
+                        <select
+                          value={item.category || 'Consultation'}
+                          onChange={(e) => handleLineItemChange(idx, 'category', e.target.value)}
+                          className="w-36 bg-black/50 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-hms-primary transition-colors"
+                        >
+                          <option value="Consultation">Consultation</option>
+                          <option value="Lab Test">Lab Test</option>
+                          <option value="Pharmacy">Pharmacy</option>
+                          <option value="Admission">Admission</option>
+                          <option value="Other">Other</option>
+                        </select>
                         {lineItems.length > 1 && (
                           <button 
                             type="button"

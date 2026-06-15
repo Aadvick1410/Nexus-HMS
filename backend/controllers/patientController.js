@@ -6,6 +6,7 @@ import Patient from '../models/Patient.js';
 // @access  Private (Patient/Admin/Receptionist)
 const createPatientProfile = asyncHandler(async (req, res) => {
   const {
+    userId,
     dob,
     gender,
     bloodGroup,
@@ -17,18 +18,29 @@ const createPatientProfile = asyncHandler(async (req, res) => {
     medicalHistory,
   } = req.body;
 
-  const patientExists = await Patient.findOne({ userId: req.user._id });
+  const targetUserId = userId || req.user._id;
+  const patientExists = await Patient.findOne({ userId: targetUserId });
 
   if (patientExists) {
     res.status(400);
     throw new Error('Patient profile already exists for this user');
   }
 
-  // Generate a unique patient ID (e.g., PAT-123456)
-  const patientId = 'PAT-' + Math.floor(100000 + Math.random() * 900000);
+  // Generate a sequential patient ID
+  const lastPatient = await Patient.findOne().sort({ createdAt: -1 });
+  let nextIdNumber = 1000;
+  
+  if (lastPatient && lastPatient.patientId && lastPatient.patientId.startsWith('PAT-')) {
+    const lastId = parseInt(lastPatient.patientId.replace('PAT-', ''), 10);
+    if (!isNaN(lastId)) {
+      nextIdNumber = lastId + 1;
+    }
+  }
+  
+  const patientId = `PAT-${nextIdNumber}`;
 
   const patient = await Patient.create({
-    userId: req.user._id,
+    userId: targetUserId,
     patientId,
     dob,
     gender,

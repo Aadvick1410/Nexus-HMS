@@ -5,7 +5,7 @@ import { protect, authorize } from '../middleware/authMiddleware.js';
 const router = express.Router();
 
 router.route('/')
-  .post(protect, authorize('Doctor'), orderLabTest)
+  .post(protect, authorize('Doctor', 'Lab Technician'), orderLabTest)
   .get(protect, authorize('Lab Technician', 'Hospital Admin', 'Super Admin'), getLabTests);
 
 // IMPORTANT: Specific routes MUST come before parameterized routes

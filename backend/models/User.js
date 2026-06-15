@@ -31,6 +31,24 @@ const userSchema = mongoose.Schema(
       ],
       default: 'Patient',
     },
+    department: {
+      type: String,
+      enum: [
+        'General Practice',
+        'Cardiology',
+        'Neurology',
+        'Endocrinology',
+        'Pediatrics',
+        'Orthopedics',
+        'Oncology',
+        'Dermatology',
+        'Psychiatry',
+        'Gastroenterology',
+        'Urology',
+        'ENT',
+        'Ophthalmology'
+      ]
+    },
     isActive: {
       type: Boolean,
       default: true,

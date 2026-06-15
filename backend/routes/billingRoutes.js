@@ -14,7 +14,7 @@ router.route('/:id')
   .put(protect, authorize('Billing Executive', 'Super Admin'), updateInvoiceAdmin);
 
 router.route('/:id/pay')
-  .put(protect, authorize('Billing Executive', 'Super Admin'), processPayment);
+  .put(protect, authorize('Patient', 'Billing Executive', 'Super Admin'), processPayment);
 
 router.route('/all')
   .get(protect, authorize('Billing Executive', 'Super Admin'), getAllInvoices);

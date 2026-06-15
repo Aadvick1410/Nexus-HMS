@@ -1,8 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, UserPlus, ListTodo, CheckCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Calendar, UserPlus, ListTodo, CheckCircle , LogOut} from 'lucide-react';
 import api from '../api/axios';
 
 const ReceptionistDashboard = () => {
+
+    const navigate = useNavigate();
+    const handleLogout = () => {
+        localStorage.removeItem('hms_token');
+        localStorage.removeItem('hms_user_name');
+        navigate('/login');
+    };
+
   const [activeTab, setActiveTab] = useState('schedule');
   const [toastMessage, setToastMessage] = useState('');
 
@@ -41,8 +50,8 @@ const ReceptionistDashboard = () => {
           console.error('Error fetching doctors:', error);
           // Mock data in case of failure for demo purposes
           setDoctors([
-            { id: 1, user: { firstName: 'Alice', lastName: 'Smith' } },
-            { id: 2, user: { firstName: 'Bob', lastName: 'Jones' } }
+            { _id: '1', name: 'Dr. Alice Smith' },
+            { _id: '2', name: 'Dr. Bob Jones' }
           ]);
         }
       };
@@ -75,24 +84,31 @@ const ReceptionistDashboard = () => {
     try {
       // 1. Create User
       const userRes = await api.post('/api/auth/register', {
-        username: regForm.username,
+        name: `${regForm.firstName} ${regForm.lastName}`,
         email: regForm.email,
         password: regForm.password,
-        role: 'PATIENT'
+        role: 'Patient'
       });
       
-      const newUserId = userRes.data?.id || userRes.data?.user?.id;
+      const newUserId = userRes.data?._id;
 
       // 2. Create Patient Profile
-      await api.post('/api/patients', {
+      const patientRes = await api.post('/api/patients', {
         userId: newUserId,
-        firstName: regForm.firstName,
-        lastName: regForm.lastName,
-        dateOfBirth: regForm.dob,
-        contactNumber: regForm.contactNumber
+        dob: regForm.dob,
+        phone: regForm.contactNumber,
+        gender: 'Other',
+        bloodGroup: 'Unknown',
+        address: 'Not Provided',
+        emergencyContact: {
+          name: 'Not Provided',
+          relationship: 'None',
+          phone: 'Not Provided'
+        }
       });
 
-      showToast('Patient registered successfully!');
+      const generatedPatientId = patientRes.data?.patientId || 'Generated';
+      showToast(`Patient registered successfully! Patient ID: ${generatedPatientId}`);
       setRegForm({
         username: '', email: '', password: '', firstName: '', lastName: '', dob: '', contactNumber: ''
       });
@@ -171,8 +187,8 @@ const ReceptionistDashboard = () => {
                     >
                       <option value="">-- Select Doctor --</option>
                       {doctors.map(doc => (
-                        <option key={doc.id} value={doc.id}>
-                          Dr. {doc.user?.firstName} {doc.user?.lastName}
+                        <option key={doc._id} value={doc._id}>
+                          {doc.name}
                         </option>
                       ))}
                     </select>

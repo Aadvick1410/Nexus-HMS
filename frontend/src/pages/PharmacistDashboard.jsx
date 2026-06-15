@@ -1,8 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
-import { Pill, AlertTriangle, Package, FileText } from 'lucide-react';
+import { Pill, AlertTriangle, Package, FileText , LogOut} from 'lucide-react';
 
 const PharmacistDashboard = () => {
+
+    const navigate = useNavigate();
+    const handleLogout = () => {
+        localStorage.removeItem('hms_token');
+        localStorage.removeItem('hms_user_name');
+        navigate('/login');
+    };
+
     const [activeTab, setActiveTab] = useState('Inventory');
     const [medicines, setMedicines] = useState([]);
     const [prescriptions, setPrescriptions] = useState([]);
@@ -98,6 +107,13 @@ const PharmacistDashboard = () => {
                         </button>
                     ))}
                 </nav>
+            
+                <div className="p-3 border-t border-white/10 mt-auto">
+                    <button onClick={handleLogout} className="flex items-center gap-3 text-white/40 hover:text-red-400 transition-colors w-full p-2.5 rounded-xl hover:bg-red-500/10">
+                        <LogOut size={18} />
+                        <span className="font-medium text-sm">Sign Out</span>
+                    </button>
+                </div>
             </aside>
 
             {/* Main Content */}
@@ -130,7 +146,7 @@ const PharmacistDashboard = () => {
                                             <td className="p-4">{p.doctorId?.name || p.doctorName || 'Unknown'}</td>
                                             <td className="p-4">
                                                 <ul className="list-disc list-inside">
-                                                    {p.medications?.map((m, idx) => (
+                                                    {(p.medicines || p.medications)?.map((m, idx) => (
                                                         <li key={idx} className="text-sm">
                                                             {m.medicineId?.name || m.medicineName} ({m.dosage}, {m.duration})
                                                         </li>

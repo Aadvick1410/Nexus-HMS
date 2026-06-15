@@ -1,9 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Activity, ClipboardPlus, PlusCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Users, Activity, ClipboardPlus, PlusCircle , LogOut} from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 
 const NurseDashboard = () => {
+
+    const navigate = useNavigate();
+    const handleLogout = () => {
+        localStorage.removeItem('hms_token');
+        localStorage.removeItem('hms_user_name');
+        navigate('/login');
+    };
+
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('assignedPatients');
   const [patients, setPatients] = useState([]);

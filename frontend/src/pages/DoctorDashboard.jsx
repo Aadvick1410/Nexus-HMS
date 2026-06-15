@@ -63,11 +63,18 @@ const DoctorDashboard = () => {
 
   const submitPrescription = async (data) => {
     try {
+      const formattedMedicines = data.medications.map(m => ({
+        medicineName: m.name,
+        dosage: m.dosage,
+        duration: m.duration,
+        instructions: m.frequency
+      }));
+
       await api.post('/api/prescriptions', {
         appointmentId: isPrescribing._id,
         patientId: isPrescribing.patientId._id,
         diagnosis: data.diagnosis,
-        medicines: data.medications,
+        medicines: formattedMedicines,
         notes: data.notes,
         validUntil: data.validUntil
       });
@@ -264,10 +271,10 @@ const DoctorHome = ({ todayAppts, upcomingAppts, completedAppts, patients, setAc
   <div className="space-y-6">
     {/* Stats Row */}
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <StatCard title="Today's Queue" value={todayAppts.length} icon={<Calendar size={22} />} color="text-emerald-400" gradient="from-emerald-500/20 to-emerald-500/5" border="border-emerald-500/25" />
-      <StatCard title="Upcoming" value={upcomingAppts.length} icon={<Clock size={22} />} color="text-blue-400" gradient="from-blue-500/20 to-blue-500/5" border="border-blue-500/25" />
-      <StatCard title="Completed" value={completedAppts.length} icon={<CheckCircle size={22} />} color="text-hms-primary" gradient="from-hms-primary/20 to-hms-primary/5" border="border-hms-primary/25" />
-      <StatCard title="Total Patients" value={patients.length} icon={<Users size={22} />} color="text-amber-400" gradient="from-amber-500/20 to-amber-500/5" border="border-amber-500/25" />
+      <StatCard title="Today's Queue" value={todayAppts.length} icon={<Calendar size={22} />} color="text-emerald-400" gradient="from-emerald-500/20 to-emerald-500/5" border="border-emerald-500/25" onClick={() => setActiveView('appointments')} />
+      <StatCard title="Upcoming" value={upcomingAppts.length} icon={<Clock size={22} />} color="text-blue-400" gradient="from-blue-500/20 to-blue-500/5" border="border-blue-500/25" onClick={() => setActiveView('appointments')} />
+      <StatCard title="Completed" value={completedAppts.length} icon={<CheckCircle size={22} />} color="text-hms-primary" gradient="from-hms-primary/20 to-hms-primary/5" border="border-hms-primary/25" onClick={() => setActiveView('appointments')} />
+      <StatCard title="Total Patients" value={patients.length} icon={<Users size={22} />} color="text-amber-400" gradient="from-amber-500/20 to-amber-500/5" border="border-amber-500/25" onClick={() => setActiveView('patients')} />
     </div>
 
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
@@ -644,8 +651,8 @@ const StatusBadge = ({ status }) => {
   );
 };
 
-const StatCard = ({ title, value, icon, color, gradient, border }) => (
-  <div className={`p-5 rounded-2xl bg-gradient-to-br ${gradient} border ${border} backdrop-blur-md relative overflow-hidden group hover:scale-[1.02] transition-transform`}>
+const StatCard = ({ title, value, icon, color, gradient, border, onClick }) => (
+  <div onClick={onClick} className={`p-5 rounded-2xl bg-gradient-to-br ${gradient} border ${border} backdrop-blur-md relative overflow-hidden group hover:scale-[1.02] transition-transform ${onClick ? 'cursor-pointer' : ''}`}>
     <div className={`absolute -right-3 -top-3 ${color} opacity-10 group-hover:opacity-20 transition-opacity`}>
       {React.cloneElement(icon, { size: 60 })}
     </div>

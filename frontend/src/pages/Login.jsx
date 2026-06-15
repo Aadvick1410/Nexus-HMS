@@ -60,7 +60,11 @@ const Login = () => {
       }
     } catch (err) {
       setIsLoading(false);
-      setError(err.response?.data?.message || 'Invalid email or password');
+      if (err.message === 'Network Error' || !err.response) {
+        setError('Cannot connect to server. Is the backend running?');
+      } else {
+        setError(err.response?.data?.message || 'Invalid email or password');
+      }
     }
   };
 
@@ -237,7 +241,7 @@ const Login = () => {
                     className="input-field !pl-11" 
                     placeholder="staff@nexushospital.org"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => setEmail(e.target.value.trim().toLowerCase())}
                   />
                 </div>
               </div>
@@ -257,7 +261,7 @@ const Login = () => {
                     className="input-field !pl-11 !pr-11 tracking-widest" 
                     placeholder="••••••••"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => setPassword(e.target.value.trim())}
                   />
                   <div 
                     className="absolute inset-y-0 right-0 pr-4 flex items-center cursor-pointer text-hms-muted hover:text-white transition-colors"

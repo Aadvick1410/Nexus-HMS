@@ -7,7 +7,7 @@ const router = express.Router();
 // Patients can create and view their own profiles, Staff can view all
 router.route('/')
   .post(protect, createPatientProfile)
-  .get(protect, authorize('Super Admin', 'Hospital Admin', 'Doctor', 'Nurse', 'Receptionist'), getAllPatients);
+  .get(protect, authorize('Super Admin', 'Hospital Admin', 'Doctor', 'Nurse', 'Receptionist', 'Billing Executive', 'Lab Technician'), getAllPatients);
 
 router.route('/profile')
   .get(protect, getPatientProfile);

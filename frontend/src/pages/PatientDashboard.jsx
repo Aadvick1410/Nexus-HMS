@@ -86,6 +86,7 @@ const PatientDashboard = () => {
       setTriageResult(res.data);
     } catch (err) {
       console.error(err);
+      alert("AI Service Error: " + (err.response?.data?.message || "Invalid API Key or Model unavailable."));
     }
     setIsTriageLoading(false);
   };
@@ -102,6 +103,16 @@ const PatientDashboard = () => {
       console.error(err);
     }
     setExplainingMedId(null);
+  };
+
+  const handlePayInvoice = async (invoiceId) => {
+    try {
+      await api.put(`/api/billing/${invoiceId}/pay`, { paymentMethod: 'Card' });
+      fetchDashboardData();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to process payment");
+    }
   };
 
   const renderView = () => {
@@ -123,9 +134,9 @@ const PatientDashboard = () => {
       case 'prescriptions':
         return <PrescriptionsView prescriptions={prescriptions} handleExplainMed={handleExplainMed} explainingMedId={explainingMedId} medExplanation={medExplanation} />;
       case 'billing':
-        return <BillingView invoices={invoices} />;
+        return <BillingView invoices={invoices} handlePayInvoice={handlePayInvoice} />;
       case 'labs':
-        return <LabResultsView />;
+        return <LabResultsView patientId={patientProfile?._id} />;
       default:
         return <DashboardHome />;
     }
@@ -319,9 +330,14 @@ const PatientDashboard = () => {
                     </div>
                   )}
                   
-                  <button onClick={() => { setIsTriageOpen(false); setActiveView('appointments'); }} className="w-full py-3 bg-white/10 border border-white/20 text-white rounded-xl font-medium text-sm hover:bg-white/20 transition-colors">
-                    Book Appointment Now
-                  </button>
+                  <div className="flex gap-3 pt-2">
+                    <button onClick={() => { setTriageResult(null); setTriageSymptoms(''); }} className="flex-1 py-3 bg-white/5 border border-white/10 text-white rounded-xl font-medium text-sm hover:bg-white/10 transition-colors">
+                      Check Another
+                    </button>
+                    <button onClick={() => { setIsTriageOpen(false); setActiveView('appointments'); }} className="flex-1 py-3 bg-hms-primary text-white rounded-xl font-medium text-sm hover:bg-hms-primary/80 transition-colors shadow-lg shadow-hms-primary/20">
+                      Book Appointment
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -358,7 +374,7 @@ const DashboardHome = ({ activeMood, isMoodLogged, handleMoodSubmit, setActiveVi
         <button onClick={() => setActiveView('records')} className="bg-black/30 p-4 rounded-xl text-center border border-white/10 hover:bg-white/5 hover:border-white/15 transition-all w-full group">
           <AlertTriangle size={20} className="mx-auto text-amber-400 mb-2 group-hover:scale-110 transition-transform" />
           <p className="text-xs text-white/40">Allergies</p>
-          <p className="font-bold text-white text-lg">{patientProfile?.allergies?.length || 0}</p>
+          <p className="font-bold text-white text-lg">{patientProfile?.allergies?.filter(a => a.toLowerCase() !== 'none').length || 0}</p>
         </button>
         <button onClick={() => setActiveView('appointments')} className="bg-black/30 p-4 rounded-xl text-center border border-white/10 hover:bg-white/5 hover:border-white/15 transition-all w-full group">
           <Calendar size={20} className="mx-auto text-hms-primary mb-2 group-hover:scale-110 transition-transform" />
@@ -617,6 +633,11 @@ const FileUploadZone = ({ type, endpoint }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadUrl, setUploadUrl] = useState(null);
 
+  // For Prescription details
+  const [doctorName, setDoctorName] = useState('');
+  const [diagnosis, setDiagnosis] = useState('');
+  const [medicinesRaw, setMedicinesRaw] = useState('');
+
   const handleUpload = async () => {
     if (!file) return;
     setIsUploading(true);
@@ -634,6 +655,13 @@ const FileUploadZone = ({ type, endpoint }) => {
           condition: `Uploaded Document: ${file.name}`,
           notes: `File accessible at: ${res.data}`
         });
+      } else if (type === 'Prescription') {
+        await api.post('/api/prescriptions/upload-patient', {
+          doctorName,
+          diagnosis,
+          medicinesRaw,
+          uploadUrl: res.data
+        });
       }
     } catch (err) {
       console.error(err);
@@ -650,14 +678,30 @@ const FileUploadZone = ({ type, endpoint }) => {
       
       {!uploadUrl ? (
         <div className="space-y-4">
+          {type === 'Prescription' && (
+            <div className="space-y-3 mb-4 bg-black/20 p-4 rounded-xl border border-white/5">
+              <div>
+                <label className="block text-xs text-white/50 mb-1 font-medium">Doctor Name (Optional)</label>
+                <input type="text" className="input-field w-full text-sm bg-black/40" placeholder="e.g. Dr. Smith" value={doctorName} onChange={(e) => setDoctorName(e.target.value)} />
+              </div>
+              <div>
+                <label className="block text-xs text-white/50 mb-1 font-medium">Diagnosis / Reason</label>
+                <input type="text" className="input-field w-full text-sm bg-black/40" placeholder="e.g. Fever and Cough" value={diagnosis} onChange={(e) => setDiagnosis(e.target.value)} />
+              </div>
+              <div>
+                <label className="block text-xs text-white/50 mb-1 font-medium">Medicines (Comma Separated)</label>
+                <textarea rows="2" className="input-field w-full text-sm bg-black/40" placeholder="e.g. Paracetamol, Amoxicillin" value={medicinesRaw} onChange={(e) => setMedicinesRaw(e.target.value)}></textarea>
+              </div>
+            </div>
+          )}
           <div className="border-2 border-dashed border-white/15 rounded-2xl p-8 text-center hover:bg-white/5 hover:border-hms-primary/30 transition-all group cursor-pointer relative">
             <input type="file" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onChange={e => setFile(e.target.files[0])} accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" />
             <UploadCloud size={40} className="mx-auto text-white/30 group-hover:text-hms-primary transition-colors mb-3" />
             <p className="font-medium text-sm text-white">{file ? file.name : "Drag & Drop or Click to Select"}</p>
             <p className="text-xs text-white/30 mt-1">PDF, JPG, PNG, DOC (Max 5MB)</p>
           </div>
-          <button onClick={handleUpload} disabled={!file || isUploading} className={`w-full py-3 rounded-xl font-medium text-sm transition-all ${file ? 'bg-hms-primary text-white hover:bg-hms-primary/80' : 'bg-white/5 text-white/30 cursor-not-allowed'}`}>
-            {isUploading ? 'Uploading securely...' : 'Upload File'}
+          <button onClick={handleUpload} disabled={!file || isUploading || (type === 'Prescription' && !medicinesRaw)} className={`w-full py-3 rounded-xl font-medium text-sm transition-all ${file && (type !== 'Prescription' || medicinesRaw) ? 'bg-hms-primary text-white hover:bg-hms-primary/80' : 'bg-white/5 text-white/30 cursor-not-allowed'}`}>
+            {isUploading ? 'Uploading securely...' : 'Upload File & Submit Details'}
           </button>
         </div>
       ) : (
@@ -703,9 +747,14 @@ const MedicalRecordsView = ({ patientProfile }) => (
                <AlertTriangle size={12} className="text-amber-400" /> Known Allergies
              </h4>
              <div className="flex gap-1.5 flex-wrap">
-               {patientProfile.allergies.map((allergy, i) => (
-                 <span key={i} className="bg-red-500/15 text-red-300 border border-red-500/30 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase">{allergy}</span>
-               ))}
+               {patientProfile.allergies.map((allergy, i) => {
+                 const isNone = allergy.toLowerCase() === 'none';
+                 return (
+                   <span key={i} className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase border ${isNone ? 'bg-white/5 text-white/40 border-white/10' : 'bg-red-500/15 text-red-300 border-red-500/30'}`}>
+                     {allergy}
+                   </span>
+                 );
+               })}
              </div>
            </div>
         )}
@@ -789,7 +838,7 @@ const PrescriptionsView = ({ prescriptions, handleExplainMed, explainingMedId, m
   </div>
 );
 
-const BillingView = ({ invoices }) => (
+const BillingView = ({ invoices, handlePayInvoice }) => (
   <div className="bg-black/30 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
     <h2 className="text-lg font-bold mb-5 flex items-center gap-2 text-white">
       <CreditCard className="text-emerald-400" size={20} /> Billing & Invoices
@@ -815,7 +864,11 @@ const BillingView = ({ invoices }) => (
               {invoice.paymentStatus}
             </span>
             {invoice.paymentStatus !== 'Paid' && (
-              <button className="text-xs bg-hms-primary hover:bg-hms-primary/80 text-white px-4 py-2 rounded-xl transition-colors font-medium">Pay Now</button>
+              <button 
+                onClick={() => handlePayInvoice(invoice._id)}
+                className="text-xs bg-hms-primary hover:bg-hms-primary/80 text-white px-4 py-2 rounded-xl transition-colors font-medium">
+                Pay Now
+              </button>
             )}
           </div>
         </div>
@@ -829,13 +882,73 @@ const BillingView = ({ invoices }) => (
   </div>
 );
 
-const LabResultsView = () => (
-  <div className="bg-black/30 backdrop-blur-xl border border-white/10 rounded-2xl p-10 text-center">
-    <TestTube size={44} className="mx-auto text-amber-400 mb-4 opacity-40" />
-    <h2 className="text-lg font-bold mb-2 text-white">Lab & Pathology Results</h2>
-    <p className="text-sm text-white/40 max-w-md mx-auto">Pending pathology and radiology reports will automatically sync here when released by the laboratory department.</p>
-  </div>
-);
+const LabResultsView = ({ patientId }) => {
+  const [labs, setLabs] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    if (patientId) {
+      api.get(`/api/labs/patient/${patientId}`)
+        .then(res => {
+          setLabs(res.data);
+          setLoading(false);
+        })
+        .catch(err => {
+          console.error(err);
+          setLoading(false);
+        });
+    } else {
+      setLoading(false);
+    }
+  }, [patientId]);
+
+  return (
+    <div className="bg-black/30 backdrop-blur-xl border border-white/10 rounded-2xl p-10 text-center md:text-left min-h-[400px]">
+      <h2 className="text-lg font-bold mb-6 text-white flex items-center gap-2">
+        <TestTube className="text-amber-400" size={24} /> Lab & Pathology Results
+      </h2>
+      
+      {loading ? (
+        <div className="text-center py-8 text-white/50">Loading lab results...</div>
+      ) : labs.length === 0 ? (
+        <div className="text-center py-12">
+          <TestTube size={44} className="mx-auto text-amber-400 mb-4 opacity-40" />
+          <p className="text-sm text-white/40 max-w-md mx-auto">No lab results found. Pending pathology and radiology reports will automatically sync here when released by the laboratory department.</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {labs.map(lab => (
+            <div key={lab._id} className="bg-black/20 border border-white/10 rounded-xl p-5 flex flex-col md:flex-row justify-between items-start md:items-center hover:bg-white/5 transition-all text-left">
+              <div>
+                <h4 className="font-semibold text-white text-md mb-1">{lab.testType}</h4>
+                <p className="text-xs text-white/50">Ordered by: Dr. {lab.orderedBy?.name || 'Unknown'}</p>
+                <p className="text-xs text-white/50 mb-2">Date: {new Date(lab.createdAt).toLocaleDateString()}</p>
+                {lab.status === 'Completed' && lab.resultsSummary && (
+                  <p className="text-sm text-white/80 bg-black/40 p-3 rounded-lg border border-white/5 mt-3">{lab.resultsSummary}</p>
+                )}
+              </div>
+              <div className="flex flex-col items-end gap-3 mt-4 md:mt-0 w-full md:w-auto">
+                <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                  lab.status === 'Completed' ? 'bg-green-500/15 text-green-400 border-green-500/30' : 
+                  lab.status === 'Requested' ? 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30' :
+                  'bg-blue-500/15 text-blue-400 border-blue-500/30'
+                }`}>
+                  {lab.status}
+                </span>
+                
+                {lab.status === 'Completed' && lab.reportUrl && (
+                  <a href={`http://localhost:5000${lab.reportUrl}`} target="_blank" rel="noreferrer" className="flex items-center justify-center md:justify-start gap-2 text-xs bg-hms-primary hover:bg-hms-primary/80 text-white px-4 py-2 rounded-xl transition-colors font-medium w-full md:w-auto">
+                    <FileText size={14} /> View Report
+                  </a>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 // ─── Sidebar Nav Item ─────────────────────────────────────
 

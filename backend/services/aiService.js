@@ -5,7 +5,7 @@ const apiKey = process.env.GEMINI_API_KEY;
 let genAI, model;
 if (apiKey) {
   genAI = new GoogleGenerativeAI(apiKey);
-  model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", generationConfig: { responseMimeType: "application/json" } });
+  model = genAI.getGenerativeModel({ model: "gemini-2.5-flash", generationConfig: { responseMimeType: "application/json" } });
 } else {
   console.warn("WARNING: GEMINI_API_KEY is not set in environment variables. Using mock AI service responses.");
 }
